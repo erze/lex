@@ -35,14 +35,14 @@ target_compile_definitions(foonathan_lex_test_base INTERFACE
                                FOONATHAN_LEX_ENABLE_ASSERTIONS=1
                                FOONATHAN_LEX_ENABLE_PRECONDITIONS=1)
 target_compile_options(foonathan_lex_test_base INTERFACE
-                           # clang/GCC warnings
-                           $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
-                           -pedantic-errors -Werror -Wall -Wextra -Wconversion -Wsign-conversion>
-                           # disable noexcept type warning on GCC
-                           $<$<CXX_COMPILER_ID:GNU>: -Wno-noexcept-type>
-                           # MSVC warnings
-                           $<$<CXX_COMPILER_ID:MSVC>:
-                           /WX /W4>)
+                       # clang/GCC warnings
+                       $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
+                       -pedantic-errors -Werror -Wall -Wextra -Wconversion -Wsign-conversion>
+                       # disable noexcept type warning on GCC
+                       $<$<CXX_COMPILER_ID:GNU>: -Wno-noexcept-type>
+                       # MSVC warnings
+                       $<$<CXX_COMPILER_ID:MSVC>:
+                       /WX /W4 /wd4127>)
 
 # the unit tests
 set(tests
@@ -50,12 +50,16 @@ set(tests
     detail/trie.cpp
     ascii.cpp
     identifier_token.cpp
+    list_production.cpp
     literal_token.cpp
+    operator_production.cpp
+    production_rule_production.cpp
+    production_rule_token.cpp
     rule_token.cpp
     tokenizer.cpp
     whitespace_token.cpp)
 
-add_executable(foonathan_lex_test tokenize.hpp ${tests})
+add_executable(foonathan_lex_test tokenize.hpp test.hpp ${tests})
 target_link_libraries(foonathan_lex_test PUBLIC foonathan_lex_test_base)
 add_test(NAME test COMMAND foonathan_lex_test)
 

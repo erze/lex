@@ -92,6 +92,28 @@ namespace lex
         template <class List, typename T>
         using contains = std::integral_constant<bool, (index_of<List, T>::value < List::size)>;
 
+        //=== is_unique ===//
+        template <class Processed, class Rest>
+        struct is_unique_impl;
+
+        template <class Processed>
+        struct is_unique_impl<Processed, type_list<>>
+        {
+            static constexpr bool value = true;
+        };
+
+        template <class Processed, typename Head, typename... Tail>
+        struct is_unique_impl<Processed, type_list<Head, Tail...>>
+        {
+            using head_duplicate = contains<Processed, Head>;
+            static constexpr bool tail_unique
+                = is_unique_impl<concat<Processed, Head>, type_list<Tail...>>::value;
+            static constexpr bool value = !head_duplicate::value && tail_unique;
+        };
+
+        template <class List>
+        using is_unique = std::integral_constant<bool, is_unique_impl<type_list<>, List>::value>;
+
         //=== filter ===//
         template <class List, template <typename> class Predicate>
         struct filter_impl;
@@ -124,6 +146,16 @@ namespace lex
 
         template <class List, template <typename> class Predicate>
         using remove_if = typename filter_impl<typename List::list, Predicate>::negative;
+
+        template <typename T>
+        struct is_same_as
+        {
+            template <typename Other>
+            using predicate = std::is_same<Other, T>;
+        };
+
+        template <class List, typename T>
+        using remove = remove_if<List, is_same_as<T>::template predicate>;
 
         //=== all_of/none_of/any_of ===//
         template <bool... Bools>
@@ -170,7 +202,7 @@ namespace lex
         template <class List, template <typename T> class Pred>
         using none_of = typename none_of_impl<typename List::list, Pred>::type;
 
-        template <class List, template <typename T> class Pred>
+        template <class List, template <typename> class Pred>
         using any_of = typename any_of_impl<typename List::list, Pred>::type;
 
         //=== for_each ===//

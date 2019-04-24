@@ -12,6 +12,9 @@ namespace foonathan
 {
 namespace lex
 {
+    template <class TokenSpec>
+    class token;
+
     /// A token that has no associated parsing rule.
     ///
     /// It can only be created by some other [lex::rule_token]().
@@ -54,6 +57,7 @@ namespace lex
 
         using spec         = TokenSpec;
         using token_kind   = lex::token_kind<TokenSpec>;
+        using token        = lex::token<TokenSpec>;
         using match_result = lex::match_result<TokenSpec>;
 
         /// \returns An unmatched result.
@@ -105,7 +109,7 @@ namespace lex
     namespace token_rule
     {
         /// \exclude
-        struct rule_base
+        struct base_rule
         {};
 
         //=== atomic rules ===//
@@ -118,7 +122,7 @@ namespace lex
                 return r;
             }
 
-            struct char_ : rule_base
+            struct char_ : base_rule
             {
                 char c;
 
@@ -141,7 +145,7 @@ namespace lex
                 return {c};
             }
 
-            struct string : rule_base
+            struct string : base_rule
             {
                 const char* str;
                 std::size_t length;
@@ -192,7 +196,7 @@ namespace lex
             }
 
             template <typename Predicate>
-            struct ascii_predicate : rule_base
+            struct ascii_predicate : base_rule
             {
                 Predicate p;
 
@@ -217,7 +221,7 @@ namespace lex
             }
 
             template <typename Function>
-            struct function : rule_base
+            struct function : base_rule
             {
                 Function func;
 
@@ -266,7 +270,7 @@ namespace lex
         namespace detail
         {
             template <std::size_t N>
-            struct any : rule_base
+            struct any : base_rule
             {
                 constexpr bool try_match(const char*& cur, const char* end) const noexcept
                 {
@@ -293,7 +297,7 @@ namespace lex
 
         namespace detail
         {
-            struct eof : rule_base
+            struct eof : base_rule
             {
                 constexpr bool try_match(const char*& cur, const char* end) const noexcept
                 {
@@ -307,7 +311,7 @@ namespace lex
 
         namespace detail
         {
-            struct fail : rule_base
+            struct fail : base_rule
             {
                 constexpr bool try_match(const char*&, const char*) const noexcept
                 {
@@ -323,7 +327,7 @@ namespace lex
         namespace detail
         {
             template <class R1, class R2>
-            struct sequence : rule_base
+            struct sequence : base_rule
             {
                 R1 r1;
                 R2 r2;
@@ -362,7 +366,7 @@ namespace lex
         namespace detail
         {
             template <class R1, class R2>
-            struct choice : rule_base
+            struct choice : base_rule
             {
                 R1 r1;
                 R2 r2;
@@ -398,7 +402,7 @@ namespace lex
         namespace detail
         {
             template <class R>
-            struct optional : rule_base
+            struct optional : base_rule
             {
                 R r;
 
@@ -425,7 +429,7 @@ namespace lex
         namespace detail
         {
             template <class R>
-            struct zero_or_more : rule_base
+            struct zero_or_more : base_rule
             {
                 R r;
 
@@ -464,7 +468,7 @@ namespace lex
         namespace detail
         {
             template <class R>
-            struct lookahead : rule_base
+            struct lookahead : base_rule
             {
                 R r;
 
@@ -497,7 +501,7 @@ namespace lex
         namespace detail
         {
             template <class R>
-            struct neg_lookahead : rule_base
+            struct neg_lookahead : base_rule
             {
                 R r;
 
@@ -530,7 +534,7 @@ namespace lex
         namespace detail
         {
             template <class R, std::size_t N>
-            struct lookback : rule_base
+            struct lookback : base_rule
             {
                 R r;
 
@@ -655,7 +659,7 @@ namespace lex
         namespace detail
         {
             template <std::size_t Min, std::size_t Max, class Rule>
-            struct repeated : rule_base
+            struct repeated : base_rule
             {
                 Rule rule;
 
